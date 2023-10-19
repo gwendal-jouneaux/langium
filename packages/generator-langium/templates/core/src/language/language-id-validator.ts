@@ -1,5 +1,5 @@
-import type { ValidationAcceptor, ValidationChecks } from 'langium';
-import type { <%= LanguageName %>AstType, Person } from './generated/ast.js';
+import type { <%=?ValidationAcceptor, ?%>ValidationChecks } from 'langium';
+import type { <%= LanguageName %>AstType<%=?, Person ?%> } from './generated/ast.js';
 import type { <%= LanguageName %>Services } from './<%= language-id %>-module.js';
 
 /**
@@ -9,7 +9,7 @@ export function registerValidationChecks(services: <%= LanguageName %>Services) 
     const registry = services.validation.ValidationRegistry;
     const validator = services.validation.<%= LanguageName %>Validator;
     const checks: ValidationChecks<<%= LanguageName %>AstType> = {
-        Person: validator.checkPersonStartsWithCapital
+        <%=? Person: validator.checkPersonStartsWithCapital ?%>
     };
     registry.register(checks, validator);
 }
@@ -19,7 +19,7 @@ export function registerValidationChecks(services: <%= LanguageName %>Services) 
  */
 export class <%= LanguageName %>Validator {
 
-    checkPersonStartsWithCapital(person: Person, accept: ValidationAcceptor): void {
+<%=?     checkPersonStartsWithCapital(person: Person, accept: ValidationAcceptor): void {
         if (person.name) {
             const firstChar = person.name.substring(0, 1);
             if (firstChar.toUpperCase() !== firstChar) {
@@ -27,5 +27,5 @@ export class <%= LanguageName %>Validator {
             }
         }
     }
-
+?%>
 }

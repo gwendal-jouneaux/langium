@@ -32,6 +32,7 @@ const LANGUAGE_PATH_ID = /language-id/g;
 const NEWLINES = /\r?\n/g;
 
 interface Answers {
+    projectType: 'blank' | 'hello_world'
     extensionName: string;
     rawLanguageName: string;
     fileExtensions: string;
@@ -63,6 +64,27 @@ class LangiumGenerator extends Generator {
     async prompting(): Promise<void> {
         printLogo(this.log);
         this.answers = await this.prompt([
+            {
+                type: 'list',
+                name: 'projectType',
+                choices: [
+                    {
+                        name: 'Blank project',
+                        value: 'blank'
+                    },
+                    {
+                        name: 'Hello World example',
+                        value: 'hello_word',
+                    }
+                ],
+                prefix: description(
+                    "You can choose to generate a blank project, or start from the 'Hello World' language example.",
+                    "The 'Hello World' language example has pre-generated services. This can be a good starting point to discover Langium.",
+                    "The blank project does not have pre-generated services linked to the grammar, allowing you to start working right away."
+                ),
+                message: 'Your project type:',
+                default: 'hello_world'
+            },
             {
                 type: 'input',
                 name: 'extensionName',
@@ -287,8 +309,16 @@ class LangiumGenerator extends Generator {
         return this.destinationPath(USER_DIR, this.answers.extensionName, ...path);
     }
 
+
     _replaceTemplateWords(fileExtensionGlob: string, languageName: string, languageId: string, content: Buffer): string {
+        const regexConditionalTemplate: RegExp = /<%=\?\s*(.*?)\s*\?%>/gs;
+        let regexConditionalReplacementTemplate: string = '$1';
+        if(this.answers.projectType === 'blank') {
+            regexConditionalReplacementTemplate = '';
+        }
+
         return content.toString()
+            .replace(regexConditionalTemplate, regexConditionalReplacementTemplate)
             .replace(EXTENSION_NAME, this.answers.extensionName)
             .replace(RAW_LANGUAGE_NAME, this.answers.rawLanguageName)
             .replace(FILE_EXTENSION, this.answers.fileExtensions)
