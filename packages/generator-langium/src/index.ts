@@ -78,9 +78,9 @@ class LangiumGenerator extends Generator {
                     }
                 ],
                 prefix: description(
-                    "You can choose to generate a blank project, or start from the 'Hello World' language example.",
-                    "The 'Hello World' language example has pre-generated services. This can be a good starting point to discover Langium.",
-                    "The blank project does not have pre-generated services linked to the grammar, allowing you to start working right away."
+                    'You can choose to generate a blank project, or start from the \'Hello World\' language example.',
+                    'The \'Hello World\' language example has pre-generated services. This can be a good starting point to discover Langium.',
+                    'The blank project does not have pre-generated services linked to the grammar, allowing you to start working right away.'
                 ),
                 message: 'Your project type:',
                 default: 'hello_world'
@@ -308,7 +308,6 @@ class LangiumGenerator extends Generator {
     _extensionPath(...path: string[]): string {
         return this.destinationPath(USER_DIR, this.answers.extensionName, ...path);
     }
-
 
     _replaceTemplateWords(fileExtensionGlob: string, languageName: string, languageId: string, content: Buffer): string {
         const regexConditionalTemplate: RegExp = /<%=\?\s*(.*?)\s*\?%>/gs;
