@@ -32,7 +32,7 @@ const LANGUAGE_PATH_ID = /language-id/g;
 const NEWLINES = /\r?\n/g;
 
 interface Answers {
-    projectType: 'blank' | 'hello_world'
+    projectType: 'blank' | 'hello_world' | 'from_grammar'
     extensionName: string;
     rawLanguageName: string;
     fileExtensions: string;
@@ -75,12 +75,17 @@ class LangiumGenerator extends Generator {
                     {
                         name: 'Hello World example',
                         value: 'hello_word',
+                    },
+                    {
+                        name: 'Project from existing grammar',
+                        value: 'from_grammar'
                     }
                 ],
                 prefix: description(
-                    'You can choose to generate a blank project, or start from the \'Hello World\' language example.',
+                    'You can choose to generate a blank project, start from the \'Hello World\' language example or use an existing Langium grammar.',
                     'The \'Hello World\' language example has pre-generated services. This can be a good starting point to discover Langium.',
-                    'The blank project does not have pre-generated services linked to the grammar, allowing you to start working right away.'
+                    'The blank project does not have pre-generated services linked to the grammar, allowing you to start working right away.',
+                    'If you already have a .langium file available, you can directly create a project using it as the base grammar.'
                 ),
                 message: 'Your project type:',
                 default: 'hello_world'
@@ -312,7 +317,7 @@ class LangiumGenerator extends Generator {
     _replaceTemplateWords(fileExtensionGlob: string, languageName: string, languageId: string, content: Buffer): string {
         const regexConditionalTemplate: RegExp = /<%=\?\s*(.*?)\s*\?%>/gs;
         let regexConditionalReplacementTemplate: string = '$1';
-        if(this.answers.projectType === 'blank') {
+        if(this.answers.projectType === 'blank' || this.answers.projectType === 'from_grammar') {
             regexConditionalReplacementTemplate = '';
         }
 
