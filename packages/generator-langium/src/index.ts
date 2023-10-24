@@ -11,6 +11,7 @@ import * as path from 'node:path';
 import which from 'which';
 import { EOL } from 'node:os';
 import * as url from 'node:url';
+import * as fileSys from 'node:fs';
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
@@ -33,6 +34,7 @@ const NEWLINES = /\r?\n/g;
 
 interface Answers {
     projectType: 'blank' | 'hello_world' | 'from_grammar'
+    grammarPath?: string
     extensionName: string;
     rawLanguageName: string;
     fileExtensions: string;
@@ -89,6 +91,16 @@ class LangiumGenerator extends Generator {
                 ),
                 message: 'Your project type:',
                 default: 'hello_world'
+            },
+            {
+                type: 'input',
+                name: 'grammarPath',
+                when: (answers => answers.projectType === 'from_grammar'),
+                prefix: description(
+                    'Please provide the .langium file from which you wish to start to build the project.'
+                ),
+                message: 'The path to your existing grammar:',
+                validate: this.validateStartingGrammar
             },
             {
                 type: 'input',
@@ -307,6 +319,24 @@ class LangiumGenerator extends Generator {
             if (answer?.openWith) {
                 this.spawnCommand(answer.openWith, [this._extensionPath()]);
             }
+        }
+    }
+
+    validateStartingGrammar(input: string, answers: Answers): boolean | string {
+        try {
+            const file: string = fileSys.readFileSync(input, 'utf-8');
+
+            return file === undefined;
+
+        } catch (error) {
+            return 'There was a problem finding your file: ' + error;
+        }
+    }
+
+    processGrammarFile(content: string, apply: (token: string) => string): string {
+        let state: 'maybe_comment' | 'maybe_end_comment' | 'single_comment' | 'multi_comment' | 'searching' | 'grammar_found' = 'searching';
+        for(const char of content) {
+
         }
     }
 
