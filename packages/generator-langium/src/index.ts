@@ -100,7 +100,7 @@ class LangiumGenerator extends Generator {
                     'Please provide the .langium file from which you wish to start to build the project.'
                 ),
                 message: 'The path to your existing grammar:',
-                validate: this.validateStartingGrammar
+                validate: ((input, _) => this.validateStartingGrammar(input))
             },
             {
                 type: 'input',
@@ -322,22 +322,47 @@ class LangiumGenerator extends Generator {
         }
     }
 
-    validateStartingGrammar(input: string, answers: Answers): boolean | string {
+    validateStartingGrammar(input: string): boolean | string {
         try {
-            const file: string = fileSys.readFileSync(input, 'utf-8');
-
-            return file === undefined;
+            const grammarContent: string = fileSys.readFileSync(input, 'utf-8');
+            const searchResult = this.searchGrammarName(grammarContent);
+            if (searchResult === undefined) {
+                return 'Invalid grammar file: could not find the name of the grammar.';
+            }
+            return true;
 
         } catch (error) {
             return 'There was a problem finding your file: ' + error;
         }
     }
 
-    processGrammarFile(content: string, apply: (token: string) => string): string {
-        let state: 'maybe_comment' | 'maybe_end_comment' | 'single_comment' | 'multi_comment' | 'searching' | 'grammar_found' = 'searching';
-        for(const char of content) {
-
+    searchGrammarName(grammar: string): [number, string] | undefined {
+        const tokenizer = /(?:^|\b).+?(?:$|\b)|[\n\r]*/gm;
+        let state: 'inline_comment' | 'multi_comment' | 'searching' | 'grammar_found' | 'multi_comment_grammar_found'  = 'searching';
+        let match: RegExpExecArray | null;
+        // eslint-disable-next-line no-cond-assign
+        while(match = tokenizer.exec(grammar)) {
+            const match_str = match[0];
+            if(state === 'inline_comment' && /\r|\n/.exec(match_str)) {
+                state = 'searching';
+            } if(state === 'searching' && match_str.trim() === '/*') {
+                state = 'multi_comment';
+            } else if(state === 'grammar_found' && match_str.trim() === '/*') {
+                state = 'multi_comment_grammar_found';
+            } else if(state === 'multi_comment' && match_str.trim() === '*/') {
+                state = 'searching';
+            } else if(state === 'multi_comment_grammar_found' && match_str.trim() === '*/') {
+                state = 'grammar_found';
+            } else if((state === 'searching' || state === 'grammar_found') && match_str.trim() === '//') {
+                state = 'inline_comment';
+            } else if(state === 'searching' && match_str.trim() === 'grammar') {
+                state = 'grammar_found';
+            } else if(state === 'grammar_found' && match_str.match(/\w+/)) {
+                state = 'searching';
+                return [match.index, match_str];
+            }
         }
+        return undefined;
     }
 
     _extensionPath(...path: string[]): string {
